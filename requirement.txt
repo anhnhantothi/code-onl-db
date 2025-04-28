@@ -1,1 +1,2 @@
 pip install flask flask_sqlalchemy mysql-connector-python
+pip install werkzeug
