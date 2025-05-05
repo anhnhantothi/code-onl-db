@@ -9,4 +9,3 @@ def register_routes(app):
     app.register_blueprint(lesson_bp)
     app.register_blueprint(topic_lesson_bp)
     app.register_blueprint(exercise_bp)
-    # app.register_blueprint(protected_bp)
