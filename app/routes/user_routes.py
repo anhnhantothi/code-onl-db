@@ -1,27 +1,35 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import create_access_token  
+
 from ..models.user import User
 from ..extensions import db
-from werkzeug.security import generate_password_hash
-from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+import datetime
+import os
 
 user_bp = Blueprint('user', __name__)
+
+
 
 @user_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-
     username = data.get('username')
     password = data.get('password')
 
     user = User.query.filter_by(username=username).first()
 
-    if not user:
+    if not user or not check_password_hash(user.password, password):
         return jsonify({'error': 'Invalid username or password'}), 400
 
-    if not check_password_hash(user.password, password):
-        return jsonify({'error': 'Invalid username or password'}), 400
+    access_token = create_access_token(identity=str(user.id))
 
-    return jsonify({'message': 'Login successful'}), 200
+    return jsonify({
+        'message': 'Login successful',
+        'access_token': access_token
+    }), 200
 
 @user_bp.route('/register', methods=['POST'])
 def register():
