@@ -1,3 +1,4 @@
+# services/lesson_service.py
 from ..models.lesson import Lesson
 from ..models.lesson_progress import LessonProgress
 from flask_jwt_extended import get_jwt_identity
@@ -38,5 +39,6 @@ def get_lesson_with_sublessons(lesson_id, db_session):
         'description': lesson.description,
         'unlock_condition': lesson.unlock_condition,
         'completed': completed,
+        # 'has_exercise': lesson.has_exercise,
         'sublessons': sorted(sublessons, key=lambda x: x['sort_order'])
     }

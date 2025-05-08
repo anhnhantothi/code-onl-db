@@ -1,3 +1,4 @@
+from datetime import datetime
 from ..extensions import db
 
 class ExerciseSubmission(db.Model):
@@ -9,6 +10,7 @@ class ExerciseSubmission(db.Model):
     submitted_code = db.Column(db.Text, nullable=False)
     actual_output = db.Column(db.Text, nullable=False)
     is_correct = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow) 
 
     # Relationships
     user = db.relationship('User', backref='submissions')

@@ -12,3 +12,7 @@ class Lesson(db.Model):
     
     sublessons = db.relationship('Sublesson', backref='lesson', lazy=True)
     exercise = db.relationship('Exercise', uselist=False, backref='lesson')
+
+    @property
+    def has_exercise(self):
+        return self.unlock_condition == 'exercise'

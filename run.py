@@ -5,7 +5,7 @@ from app.models.topic_lesson import TopicLesson
 from app.models.lesson import Lesson
 from app.models.sublesson import Sublesson
 from app.models.exercise import Exercise
-from app.models.exercise_submission import ExerciseSubmission
+# from app.models.exercise_submission import ExerciseSubmission
 from app.models.user import User
 from app.models.lesson_progress import LessonProgress
 
