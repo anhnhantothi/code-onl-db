@@ -4,3 +4,4 @@ pip install flask-cors
 pip install PyJWT
 pip install python-dotenv
 pip install flask-jwt-extended
+pip install openai
