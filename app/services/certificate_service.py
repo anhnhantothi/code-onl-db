@@ -13,6 +13,9 @@ from app.models.certificate import Certificate
 from app.models.user import User
 from app.models.topic_lesson import TopicLesson
 
+from reportlab.lib.colors import HexColor, lightgrey
+
+
 def check_topic_complete(user_id: int, topic_id: int) -> bool:
     """
     Trả về True nếu user đã hoàn thành mọi lesson và exercise trong topic.
@@ -63,36 +66,79 @@ def issue_certificate(user_id: int, topic_id: int) -> Certificate:
     db.session.add(cert)
     db.session.flush()  # để cert.id được gán
 
-    # 3) Vẽ PDF vào bộ nhớ
+     # 3) Vẽ PDF
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     w, h = A4
 
-    c.setFont("Helvetica-Bold", 24)
-    c.drawCentredString(w/2, h-100, "Certificate of Completion")
+    # -- nền nhạt --
+    c.setFillColor(lightgrey)
+    c.rect(30, 30, w-60, h-60, fill=1, stroke=0)
+    c.setFillColor(HexColor('#000000'))
 
+    # -- logo (nếu có) --
+    logo_path = os.path.join(current_app.root_path, 'static', 'logo.png')
+    if os.path.exists(logo_path):
+        c.drawImage(logo_path, 50, h-100, width=100, preserveAspectRatio=True, mask='auto')
+
+    # -- khung viền --
+    c.setLineWidth(4)
+    c.setStrokeColor(HexColor('#004080'))
+    c.rect(20, 20, w-40, h-40, fill=0)
+
+    # -- tiêu đề --
+    c.setFont("Helvetica-Bold", 28)
+    c.setFillColor(HexColor('#004080'))
+    c.drawCentredString(w/2, h-120, "Certificate of Completion")
+
+    # -- dòng phụ đề --
+    c.setFont("Helvetica-Oblique", 14)
+    c.setFillColor(HexColor('#333333'))
+    c.drawCentredString(w/2, h-160, "This certifies that")
+
+    # -- tên người nhận --
+    c.setFont("Times-BoldItalic", 22)
+    c.setFillColor(HexColor('#000000'))
+    c.drawCentredString(w/2, h-200, f"{user.username}")
+
+    # -- nội dung chính --
     c.setFont("Helvetica", 16)
-    c.drawCentredString(w/2, h-160, f"This certifies that {user.username}")
+    c.drawCentredString(w/2, h-240, f"has successfully completed the mini-course")
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(w/2, h-270, f"“{topic.name}”")
 
-    c.setFont("Helvetica", 14)
-    c.drawCentredString(w/2, h-200, f"has completed the mini-course “{topic.name}”")
-
+    # -- ngày và ID --
     date_str = cert.issued_at.strftime("%Y-%m-%d")
-    c.setFont("Helvetica-Oblique", 12)
-    c.drawCentredString(w/2, h-260, f"Issued at: {date_str} | Certificate ID: {cert.id}")
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(w/2, h-320, f"Issued at: {date_str}    |    Certificate ID: {cert.id}")
+
+    # -- chữ ký hoặc seal --
+    sig_path = os.path.join(current_app.root_path, 'static', 'signature.png')
+    if os.path.exists(sig_path):
+        c.drawImage(sig_path, w-200, 60, width=120, preserveAspectRatio=True, mask='auto')
+        c.setFont("Helvetica-Oblique", 10)
+        c.drawString(w-200, 50, "Instructor Signature")
 
     c.showPage()
     c.save()
 
-    # 4) Ghi file ra đĩa
+    # 4) Ghi file
     filename = f"cert_{user_id}_{topic_id}_{cert.id}.pdf"
     folder   = current_app.config['CERT_FOLDER']
-    os.makedirs(folder, exist_ok=True)             # tạo folder nếu chưa có
+    os.makedirs(folder, exist_ok=True)
     path     = os.path.join(folder, filename)
     with open(path, "wb") as f:
         f.write(buffer.getvalue())
 
-    # 5) Cập nhật lại pdf_path và commit
+    # c.setFont("Helvetica-Bold", 60)
+    # c.setFillColor(HexColor('#CCCCCC'))
+    # c.saveState()
+    # c.translate(w/2, h/2)
+    # c.rotate(45)
+    # c.drawCentredString(0, 0, "DRAFT")
+    # c.restoreState()
+
+    # 5) Cập nhật pdf_path và commit
     cert.pdf_path = filename
     db.session.commit()
     return cert
