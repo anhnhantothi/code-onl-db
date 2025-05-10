@@ -1,0 +1,26 @@
+<!-- templates/certificate.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Certificate of Completion</title>
+  <style>
+    body { text-align: center; font-family: serif; padding: 2cm; }
+    h1 { font-size: 2.5em; margin-bottom: 0.2em; }
+    h2 { font-size: 2em; margin: 0.5em 0; }
+    p { margin: 0.2em 0; font-size: 1.2em; }
+    .footer { margin-top: 2em; font-size: 0.9em; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Certificate of Completion</h1>
+  <p>This certifies that</p>
+  <h2>{{ user.name }}</h2>
+  <p>has successfully completed the mini-course</p>
+  <h3>{{ topic.title }}</h3>
+  <div class="footer">
+    Date: {{ issued_at }}<br>
+    Certificate ID: {{ certificate.id }}
+  </div>
+</body>
+</html>

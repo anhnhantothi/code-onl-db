@@ -8,6 +8,7 @@ from app.models.exercise import Exercise
 # from app.models.exercise_submission import ExerciseSubmission
 from app.models.user import User
 from app.models.lesson_progress import LessonProgress
+from app.models.certificate import Certificate
 
 
 

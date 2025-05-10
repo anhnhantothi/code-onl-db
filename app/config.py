@@ -12,3 +12,6 @@ class Config:
     JWT_TOKEN_LOCATION = ['headers']
     JWT_HEADER_NAME = 'Authorization'
     JWT_HEADER_TYPE = 'Bearer'
+
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    CERT_FOLDER = os.path.join(BASE_DIR, 'static', 'certs')
