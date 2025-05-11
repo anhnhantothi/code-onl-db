@@ -5,12 +5,39 @@ import os
 import json
 
 code_runner_bp = Blueprint('code_runner', __name__)
+import re
+
+def is_malicious(code: str) -> bool:
+    dangerous_patterns = [
+        r'\bimport\s+os\b',
+        r'\bimport\s+sys\b',
+        r'\beval\s*\(',
+        r'\bexec\s*\(',
+        r'\bos\.system\s*\(',
+        r'\b__import__\s*\(',
+        r'\bopen\s*\(',
+        r'\bsubprocess\b',
+        r'\bthreading\b',
+        r'\bshutil\b',
+        r'\bsocket\b'
+    ]
+    for pattern in dangerous_patterns:
+        if re.search(pattern, code):
+            return True
+    return False
 
 @code_runner_bp.route('/run', methods=['POST'])
 def run_code():
     data = request.get_json()
     code = data.get('code', '')
     stdin_data = data.get('stdin', '')
+    if is_malicious(code):
+        return make_response(json.dumps({
+            'stdout': '',
+            'stderr': '',
+            'error': '🚫 Mã chứa lệnh nguy hiểm và đã bị chặn.'
+        }, ensure_ascii=False), 200, {'Content-Type': 'application/json; charset=utf-8'})
+    
 
     try:
         # Ghi file Python tạm bằng UTF-8
