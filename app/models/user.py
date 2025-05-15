@@ -8,3 +8,5 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False) 
 
     certificate = db.relationship('Certificate', back_populates='user')
+    user_info = db.relationship('UserInfo', uselist=False, back_populates='user')
+    practice_processes = db.relationship('PracticeProcess', back_populates='user')
