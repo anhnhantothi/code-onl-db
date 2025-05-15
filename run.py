@@ -9,6 +9,9 @@ from app.models.exercise import Exercise
 from app.models.user import User
 from app.models.lesson_progress import LessonProgress
 from app.models.certificate import Certificate
+from app.models.practice_process import PracticeProcess
+from app.models.practice import Practice
+from app.models.user_info import UserInfo
 
 
 
