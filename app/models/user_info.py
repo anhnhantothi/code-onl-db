@@ -1,6 +1,6 @@
 # app/models/user_info.py
-from datetime import datetime
 from ..extensions import db
+from datetime import datetime
 
 class UserInfo(db.Model):
     __tablename__ = 'user_info'
@@ -20,5 +20,4 @@ class UserInfo(db.Model):
     vip = db.Column(db.Boolean, default=False)
     enabled = db.Column(db.Boolean, default=True)
 
-    # Relationship
     user = db.relationship('User', back_populates='user_info')

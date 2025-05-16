@@ -11,6 +11,7 @@ def create_app():
     jwt = JWTManager(app)
 
     db.init_app(app)
+    from app import models
 
     # Enable CORS
     CORS(app)
