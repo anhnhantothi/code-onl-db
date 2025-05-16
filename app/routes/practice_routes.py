@@ -11,6 +11,7 @@ def get_practices():
     for p in practices:
         result.append({
             "title": p.title,
+            "slug": p.slug,
             "difficulty": p.difficulty,  # 'EASY', 'MEDIUM', 'HARD'
             "tags": json.loads(p.tags) if p.tags else [],
             "completionRate": p.completion_rate,
