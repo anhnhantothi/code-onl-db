@@ -12,6 +12,7 @@ class Practice(db.Model):
     likes = db.Column(db.Integer, default=0)
     active = db.Column(db.Boolean, default=True)
     description = db.Column(db.Text, nullable=False)   # Đề bài
+    slug = db.Column(db.String(255), unique=True)
 
     # Relationship
     processes = db.relationship('PracticeProcess', back_populates='practice')
