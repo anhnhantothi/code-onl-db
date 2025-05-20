@@ -13,6 +13,7 @@ class Practice(db.Model):
     active = db.Column(db.Boolean, default=True)
     description = db.Column(db.Text, nullable=False)   # Đề bài
     slug = db.Column(db.String(255), unique=True)
+    is_delete = db.Column(db.Boolean, default=False)
 
     # Relationship
     processes = db.relationship('PracticeProcess', back_populates='practice')

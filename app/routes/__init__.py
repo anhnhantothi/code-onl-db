@@ -1,3 +1,4 @@
+from flask_cors import CORS
 from .user_routes import user_bp
 from .lesson_routes import lesson_bp
 from .topic_lesson_routes import topic_lesson_bp
@@ -8,6 +9,7 @@ from .code_runner_routes import code_runner_bp
 from .practice_routes import practice_bp
 from .admin.practice_admin import admin_practice_bp
 from .comment_routes import comment_bp
+from .analytics_routes import analytics_bp
 
 def register_routes(app):
     app.register_blueprint(user_bp)
@@ -24,3 +26,4 @@ def register_routes(app):
     app.register_blueprint(comment_bp)
     # ----------- Admin-----------
     app.register_blueprint(admin_practice_bp)
+    app.register_blueprint(analytics_bp)

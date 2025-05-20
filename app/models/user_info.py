@@ -19,5 +19,9 @@ class UserInfo(db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     vip = db.Column(db.Boolean, default=False)
     enabled = db.Column(db.Boolean, default=True)
+    use_number = db.Column(db.Integer, default=0)
+    email = db.Column(db.String(120), nullable=False, unique=True)
+    is_delete = db.Column(db.Boolean, default=True)
+
 
     user = db.relationship('User', back_populates='user_info')

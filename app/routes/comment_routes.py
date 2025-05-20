@@ -7,7 +7,7 @@ comment_bp = Blueprint('comment', __name__, url_prefix='/api/comments')
 @comment_bp.route('/', methods=['GET'])
 def get_comments():
     practice_id = request.args.get('practice_id')
-    print(practice_id,"nhàn")
+    # print(practice_id,"nhàn")
     if not practice_id:
         return jsonify({'error': 'Missing practice_id'}), 400
     return jsonify(comment_service.get_comments_by_practice(int(practice_id)))
