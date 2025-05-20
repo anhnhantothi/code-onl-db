@@ -26,10 +26,30 @@ def login():
 
     access_token = create_access_token(identity=str(user.id))
 
+    # Lấy thông tin từ user_info nếu có
+    user_info = user.user_info
+    info_dict = {
+        'id': user.id,
+        'username': user.username,
+        'full_name': user_info.full_name if user_info else None,
+        'code': user_info.code if user_info else None,
+        'gender': user_info.gender if user_info else None,
+        'job': user_info.job if user_info else None,
+        'phone_number': user_info.phone_number if user_info else None,
+        'address': user_info.address if user_info else None,
+        'start_date': user_info.start_date.isoformat() if user_info and user_info.start_date else None,
+        'last_online': user_info.last_online.isoformat() if user_info and user_info.last_online else None,
+        'is_admin': user_info.is_admin if user_info else False,
+        'vip': user_info.vip if user_info else False,
+        'enabled': user_info.enabled if user_info else True,
+    }
+
     return jsonify({
         'message': 'Login successful',
-        'access_token': access_token
+        'access_token': access_token,
+        'user': info_dict
     }), 200
+
 
 @user_bp.route('/register', methods=['POST'])
 def register():
