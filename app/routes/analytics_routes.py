@@ -102,38 +102,47 @@ def get_heatmap_submission_data():
 @analytics_bp.route('/analytics/registration-completion', methods=['GET'])
 @jwt_required()
 def get_monthly_user_data():
-    # Lấy số bài học trong hệ thống
+    from sqlalchemy.sql import extract, func
+
+    # 1. Tổng số bài học trong hệ thống
     total_lessons = db.session.query(func.count(Lesson.id)).scalar()
 
-    # Truy vấn số người mới đăng ký theo tháng
+    # 2. Người dùng mới đăng ký theo tháng
     new_users = (
         db.session.query(
             extract('month', UserInfo.start_date).label('month'),
             func.count(UserInfo.id).label('newUsers')
         )
         .filter(UserInfo.is_delete == False)
-        .group_by('month')
+        .group_by(extract('month', UserInfo.start_date))
+        .order_by(extract('month', UserInfo.start_date))
         .all()
     )
 
-    # Truy vấn số người hoàn thành toàn bộ khóa học theo tháng
+    # 3. Người hoàn thành toàn bộ bài học
+    subquery_completed_users = (
+        db.session.query(
+            LessonProgress.user_id
+        )
+        .filter(LessonProgress.completed == True)
+        .group_by(LessonProgress.user_id)
+        .having(func.count(LessonProgress.lesson_id) == total_lessons)
+        .subquery()
+    )
+
     full_completed = (
         db.session.query(
             extract('month', UserInfo.start_date).label('month'),
-            func.count().label('completedUsers')
+            func.count(UserInfo.id).label('completedUsers')
         )
         .filter(UserInfo.is_delete == False)
-        .filter(UserInfo.id.in_(
-            db.session.query(LessonProgress.user_id)
-            .filter(LessonProgress.completed == True)
-            .group_by(LessonProgress.user_id)
-            .having(func.count(LessonProgress.lesson_id) == total_lessons)
-        ))
-        .group_by('month')
+        .filter(UserInfo.id.in_(subquery_completed_users))
+        .group_by(extract('month', UserInfo.start_date))
+        .order_by(extract('month', UserInfo.start_date))
         .all()
     )
 
-    # Map dữ liệu thành dict để dễ xử lý
+    # 4. Dữ liệu trả về dạng biểu đồ
     new_users_dict = {int(row.month): row.newUsers for row in new_users}
     completed_users_dict = {int(row.month): row.completedUsers for row in full_completed}
 
@@ -141,8 +150,8 @@ def get_monthly_user_data():
     for month in range(1, 13):
         result.append({
             "month": f"Tháng {month}",
-            "lineA": new_users_dict.get(month, 0),
-            "lineB": completed_users_dict.get(month, 0)
+            "lineA": new_users_dict.get(month, 0),       # Người đăng ký
+            "lineB": completed_users_dict.get(month, 0)  # Người hoàn thành
         })
 
     return jsonify(result), 200

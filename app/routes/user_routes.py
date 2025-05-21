@@ -24,13 +24,12 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({'error': 'Invalid username or password'}), 400
 
-    access_token = create_access_token(identity=str(user.id))
+    access_token = create_access_token(identity=str(user.id),expires_delta=datetime.timedelta(days=1000))
 
     # Lấy thông tin từ user_info nếu có
     user_info = user.user_info
-    print(user_info)
     info_dict = {
-        'id': user.id,
+        'id': user_info.id,
         'username': user.username,
         'full_name': user_info.full_name if user_info else None,
         'code': user_info.code if user_info else None,
@@ -76,7 +75,7 @@ def register():
     # ✅ Tạo UserInfo tương ứng
     user_info = UserInfo(
         user_id=new_user.id,
-        full_name='',
+        full_name=username,
         email=email,
         gender='MALE',
         phone_number='',
@@ -158,31 +157,27 @@ def get_patient_profile():
 @user_bp.route('/patient-profile', methods=['PUT'])
 @jwt_required()
 def update_patient_profile():
-    user_info_id = request.args.get('userId', type=int)  # Thực chất là user_info.id
+    user_info_id = request.args.get('userId', type=int)  # Đây là user_info.id
 
-    print(user_info_id)
-    # Truy xuất trực tiếp từ UserInfo
-    user_info = UserInfo.query.filter_by(user_id=user_info_id).first()
+    if not user_info_id:
+        return jsonify({'error': 'Missing userId'}), 400
 
+    user_info = UserInfo.query.get(user_info_id)  # ✅ Đúng rồi
     if not user_info:
         return jsonify({'error': 'UserInfo not found'}), 404
 
     data = request.get_json()
 
-    # Cập nhật các trường được chỉ định
-    if 'email' in data:
-        user_info.user.email = data['email']  # Email nằm trong bảng User
-
     user_info.job = data.get('job', user_info.job)
     user_info.full_name = data.get('fullName', user_info.full_name)
-    user_info.phone_number = data.get('phoneNumber', user_info.phone_number)
+    user_info.phone_number = data.get('phone', user_info.phone_number)
     user_info.address = data.get('address', user_info.address)
     user_info.gender = data.get('gender', user_info.gender)
 
     db.session.commit()
+    print("✅ Dữ liệu đã commit xong")
 
     return jsonify({'message': 'UserInfo updated successfully'}), 200
-
 
 @user_bp.route('/user-info/all', methods=['GET'])
 @jwt_required()
@@ -262,3 +257,22 @@ def set_admin_status_bulk():
         'updated': updated,
         'skipped': skipped
     }), 200
+@user_bp.route('/set-vip', methods=['PUT'])
+@jwt_required()
+def set_user_vip():
+    user_info_id = request.args.get('userId', type=int)
+
+    if not user_info_id:
+        return jsonify({'error': 'Missing userId'}), 400
+
+    user_info = UserInfo.query.get(user_info_id)
+    if not user_info:
+        return jsonify({'error': 'UserInfo not found'}), 404
+
+    if user_info.vip:
+        return jsonify({'message': 'User is already VIP'}), 200
+
+    user_info.vip = True
+    db.session.commit()
+
+    return jsonify({'message': 'User VIP status set to true'}), 200

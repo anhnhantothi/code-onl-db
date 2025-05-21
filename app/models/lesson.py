@@ -16,3 +16,4 @@ class Lesson(db.Model):
     @property
     def has_exercise(self):
         return self.unlock_condition == 'exercise'
+    

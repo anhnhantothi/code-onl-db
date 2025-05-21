@@ -9,3 +9,4 @@ from .exercise import Exercise
 from .lesson_progress import LessonProgress
 from .topic_lesson import TopicLesson
 from .exercise_submission import ExerciseSubmission
+__all__ = ['db', 'TopicLesson', 'Lesson', 'Sublesson', 'Exercise']
