@@ -162,7 +162,7 @@ def update_patient_profile():
     if not user_info_id:
         return jsonify({'error': 'Missing userId'}), 400
 
-    user_info = UserInfo.query.get(user_info_id)  # ✅ Đúng rồi
+    user_info = UserInfo.query.get(user_info_id)  #Đúng rồi
     if not user_info:
         return jsonify({'error': 'UserInfo not found'}), 404
 
@@ -175,7 +175,7 @@ def update_patient_profile():
     user_info.gender = data.get('gender', user_info.gender)
 
     db.session.commit()
-    print("✅ Dữ liệu đã commit xong")
+    # print("✅ Dữ liệu đã commit xong")
 
     return jsonify({'message': 'UserInfo updated successfully'}), 200
 
