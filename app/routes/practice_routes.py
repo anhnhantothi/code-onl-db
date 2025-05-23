@@ -11,7 +11,9 @@ from app.models.practice_process import PracticeProcess
 practice_bp = Blueprint('practice', __name__)
 
 @practice_bp.route('/api/practices', methods=['GET'])
+@jwt_required()
 def get_practices():
+    user_id = get_jwt_identity()
     active_param = request.args.get('active')  # dạng chuỗi: 'true', 'false', hoặc None
 
     query = Practice.query.filter_by(is_delete=False)
@@ -29,6 +31,8 @@ def get_practices():
 
     result = []
     for p in practices:
+        process = PracticeProcess.query.filter_by(user_id=user_id, practice_id=p.id).first()
+        is_completed = process.is_completed if process else False
         result.append({
             "title": p.title,
             "slug": p.slug,
@@ -37,7 +41,8 @@ def get_practices():
             "completionRate": p.completion_rate,
             "likes": p.likes,
             "isActive": p.active,
-            "id": p.id
+            "id": p.id,
+            "isCompleted": is_completed
         })
 
     return jsonify(result), 200
