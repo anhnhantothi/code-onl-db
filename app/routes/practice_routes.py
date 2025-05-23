@@ -1,9 +1,12 @@
+import datetime
 from flask import Blueprint, abort, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from slugify import slugify
 from app.models.practice import Practice
 from app.extensions import db
 import json
+
+from app.models.practice_process import PracticeProcess
 
 practice_bp = Blueprint('practice', __name__)
 
@@ -57,6 +60,53 @@ def get_practice_by_slug(slug):
         'description': practice.description,
         'slug': practice.slug
     })
+
+@practice_bp.route('/api/practices/submit', methods=['POST'])
+@jwt_required()
+def submit_practice():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    slug = data.get('slug')
+    code = data.get('code')
+
+    # An toàn hơn khi xử lý score
+    try:
+        score = int(data.get('score', 0))
+    except (ValueError, TypeError):
+        print('❌ Score không hợp lệ:', data.get('score'))
+        return jsonify({'error': 'Invalid score format'}), 400
+
+    is_completed = score >= 5
+
+    if not slug or not code:
+        return jsonify({'error': 'Missing slug or code'}), 400
+
+    practice = Practice.query.filter_by(slug=slug).first()
+    if not practice:
+        return jsonify({'error': 'Practice not found'}), 404
+
+    process = PracticeProcess.query.filter_by(user_id=user_id, practice_id=practice.id).first()
+    if not process:
+        process = PracticeProcess(user_id=user_id, practice_id=practice.id)
+
+    process.submit_code = code
+    process.submitted_at = datetime.datetime.utcnow()
+    process.is_completed = is_completed
+
+    db.session.add(process)
+    db.session.commit()
+    # print('>> Dữ liệu nhận từ frontend:', data)
+    # print('>> user_id:', user_id)
+    # print('>> slug:', slug)
+    # print('>> code:', code)
+    print('>> score:', data.get('score'))
+
+    return jsonify({
+        'message': 'Đã lưu bài làm.',
+        'completed': process.is_completed
+    }), 200
+
 
 @practice_bp.route('/api/practices/delete', methods=['PUT'])
 @jwt_required()
