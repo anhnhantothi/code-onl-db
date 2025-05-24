@@ -14,7 +14,10 @@ def create_app():
     from app import models
 
     # Enable CORS
-    CORS(app)
+    # CORS(app)
+    CORS(app, supports_credentials=True, resources={
+        r"/*": {"origins": "http://localhost:5173"}
+    })
     register_routes(app)
 
     return app
