@@ -39,6 +39,7 @@ def use_chat():
 @jwt_required()
 def check_chat_limit():
     user_id = get_jwt_identity()
+    print(user_id)
     user_info = UserInfo.query.filter_by(user_id=user_id).first()
 
     if not user_info:
