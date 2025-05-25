@@ -119,10 +119,11 @@ def get_monthly_user_data():
         .all()
     )
 
-    # 3. Người hoàn thành toàn bộ bài học
-    subquery_completed_users = (
+    # 3. Người dùng hoàn thành toàn bộ bài học: lấy user_id và thời điểm submit cuối cùng
+    subquery = (
         db.session.query(
-            LessonProgress.user_id
+            LessonProgress.user_id,
+            func.max(LessonProgress.submit_time).label('completed_date')
         )
         .filter(LessonProgress.completed == True)
         .group_by(LessonProgress.user_id)
@@ -130,28 +131,28 @@ def get_monthly_user_data():
         .subquery()
     )
 
-    full_completed = (
+    # 4. Nhóm số người hoàn thành theo tháng hoàn thành (submit_time)
+    completed_by_month = (
         db.session.query(
-            extract('month', UserInfo.start_date).label('month'),
-            func.count(UserInfo.id).label('completedUsers')
+            extract('month', subquery.c.completed_date).label('month'),
+            func.count(subquery.c.user_id).label('completedUsers')
         )
-        .filter(UserInfo.is_delete == False)
-        .filter(UserInfo.id.in_(subquery_completed_users))
-        .group_by(extract('month', UserInfo.start_date))
-        .order_by(extract('month', UserInfo.start_date))
+        .group_by(extract('month', subquery.c.completed_date))
+        .order_by(extract('month', subquery.c.completed_date))
         .all()
     )
 
-    # 4. Dữ liệu trả về dạng biểu đồ
+    # 5. Tổng hợp dữ liệu
     new_users_dict = {int(row.month): row.newUsers for row in new_users}
-    completed_users_dict = {int(row.month): row.completedUsers for row in full_completed}
+    completed_users_dict = {int(row.month): row.completedUsers for row in completed_by_month}
 
     result = []
     for month in range(1, 13):
         result.append({
             "month": f"Tháng {month}",
-            "lineA": new_users_dict.get(month, 0),       # Người đăng ký
-            "lineB": completed_users_dict.get(month, 0)  # Người hoàn thành
+            "lineA": new_users_dict.get(month, 0),       # Số người đăng ký mới
+            "lineB": completed_users_dict.get(month, 0)  # Số người hoàn thành (theo submit_time)
         })
 
     return jsonify(result), 200
+

@@ -29,6 +29,7 @@ def login():
     # Lấy thông tin từ user_info nếu có
     user_info = user.user_info
     info_dict = {
+        'user_id' : user.id,
         'id': user_info.id,
         'username': user.username,
         'full_name': user_info.full_name if user_info else None,
@@ -146,6 +147,7 @@ def get_patient_profile():
         'job': user_info.job or '',
         'code': user_info.code or '',
         'vip': user_info.vip,
+        'useNumber': user_info.use_number,
         'isAdmin': user_info.is_admin,
         'startDate': user_info.start_date.isoformat() if user_info.start_date else None,
         'lastOnline': user_info.last_online.isoformat() if user_info.last_online else None,

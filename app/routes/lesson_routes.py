@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
+from app.models.lesson import Lesson
 from app.models.lesson_progress import LessonProgress
 from ..services.lesson_service import get_lesson_with_sublessons
 from ..extensions import db
@@ -35,3 +36,18 @@ def mark_lesson_complete(lesson_id):
     db.session.commit()
 
     return jsonify({'message': 'Lesson marked as completed'}), 200
+
+@lesson_bp.route('/topics/<int:topic_id>/lessons', methods=['GET'])
+@jwt_required()
+def get_lessons_by_topic(topic_id):
+    lessons = Lesson.query.filter_by(topic_lesson_id=topic_id).all()
+    result = []
+    for lesson in lessons:
+        result.append({
+            "id": lesson.id,
+            "title": lesson.title,
+            "level": lesson.level,
+            "description": lesson.description,
+            "has_exercise": lesson.has_exercise,
+        })
+    return jsonify(result), 200
