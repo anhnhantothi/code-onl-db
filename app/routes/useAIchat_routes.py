@@ -25,15 +25,14 @@ def use_chat():
             'current_use': user_info.use_number
         }), 403
 
-    # Tăng lượt sử dụng
     user_info.use_number += 1
     db.session.commit()
 
     return jsonify({
         'message': 'Success',
         'current_use': user_info.use_number,
-        'require_vip': False
-    })
+        'require_vip': not user_info.vip
+    }), 200
 
 @chat_bp.route('/check-chat-limit', methods=['GET'])
 @jwt_required()
