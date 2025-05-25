@@ -8,10 +8,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
 import os
-
+from sqlalchemy import or_, func
 user_bp = Blueprint('user', __name__)
-
-
 
 @user_bp.route('/login', methods=['POST'])
 def login():
@@ -24,12 +22,18 @@ def login():
     if not user or not check_password_hash(user.password, password):
         return jsonify({'error': 'Invalid username or password'}), 400
 
-    access_token = create_access_token(identity=str(user.id),expires_delta=datetime.timedelta(days=1000))
-
-    # Lấy thông tin từ user_info nếu có
     user_info = user.user_info
+
+    if user_info and user_info.is_delete:
+        return jsonify({'error': 'Invalid username or password'}), 400
+
+    access_token = create_access_token(
+        identity=str(user.id),
+        expires_delta=datetime.timedelta(days=1000)
+    )
+
     info_dict = {
-        'user_id' : user.id,
+        'user_id': user.id,
         'id': user_info.id,
         'username': user.username,
         'full_name': user_info.full_name if user_info else None,
@@ -73,7 +77,7 @@ def register():
     db.session.add(new_user)
     db.session.commit()  # Phải commit để có new_user.id
 
-    # ✅ Tạo UserInfo tương ứng
+    # Tạo UserInfo
     user_info = UserInfo(
         user_id=new_user.id,
         full_name=username,
