@@ -59,7 +59,12 @@ def run_code():
                 errors='replace',
                 env=env
             )
-
+            if stdin_data and "input(" in code:
+                prompt_match = re.search(r'input\((["\'])(.*?)\1\)', code)
+                prompt_text = prompt_match.group(2) if prompt_match else ''
+                user_input = stdin_data.strip().split('\n')[0]
+                simulated_line = f"{prompt_text}: {user_input}\n"
+                result.stdout = simulated_line + result.stdout
         # Trả JSON UTF-8 không escape unicode
         return make_response(
             json.dumps({
